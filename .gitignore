@@ -1,0 +1,6 @@
+.vs/
+.netlify/
+bin/
+obj/
+*.user
+*.suo

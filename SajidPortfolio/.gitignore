@@ -1,0 +1,8 @@
+@"
+.vs/
+bin/
+obj/
+.netlify/
+*.user
+*.suo
+"@ | Set-Content .gitignore
