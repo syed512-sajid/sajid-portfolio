@@ -910,12 +910,11 @@ a:focus-visible, button:focus-visible {
     vertical-align: middle;
 }
 
-@@keyframes spin {
+@keyframes spin {
     to {
         transform: rotate(360deg);
     }
 }
-
 .success-modal-overlay {
     position: fixed;
     inset: 0;
@@ -1089,16 +1088,23 @@ a:focus-visible, button:focus-visible {
 .success-close-btn {
     min-width: 100px;
 }
-/* ---------- Floating Contact Stack (all pages) ---------- */
+/* ---------- Floating Contact Stack ---------- */
 .fab-stack {
     position: fixed;
     right: 24px;
-    bottom: 24px;
+    bottom: 90px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     z-index: 999;
+}
+
+.fab-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
 }
 
 .fab-btn {
@@ -1108,8 +1114,9 @@ a:focus-visible, button:focus-visible {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
     transition: transform 0.15s ease;
+    text-decoration: none;
 }
 
     .fab-btn:hover {
@@ -1124,7 +1131,11 @@ a:focus-visible, button:focus-visible {
     background: var(--accent);
 }
 
+/* Arrow - sits above the whole button group */
 .fab-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--accent);
     animation: fabArrowBounce 1.4s ease-in-out infinite;
     pointer-events: none;
@@ -1141,6 +1152,16 @@ a:focus-visible, button:focus-visible {
 }
 
 @media (max-width: 780px) {
+    .fab-stack {
+        right: 18px;
+        bottom: 70px;
+        gap: 10px;
+    }
+
+    .fab-buttons {
+        gap: 24px;
+    }
+
     .fab-btn {
         width: 50px;
         height: 50px;
@@ -1299,7 +1320,7 @@ a.project-card {
 }
 
 
-GALLERY
+/* GALLERY */
 /* ---------- Detail content grid ---------- */
 .detail-grid {
     display: grid;
