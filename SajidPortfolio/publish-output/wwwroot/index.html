@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+    <title>Sajid Abbas — Full Stack .NET Developer</title>
+
+    <meta name="description"
+          content="Sajid Abbas, Full Stack .NET Developer from Multan, Pakistan. ASP.NET Core, SQL Server, WinForms." />
+
+    <base href="/" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="css/app.css" />
+
+</head>
+
+<body>
+
+    <!-- Blazor renders INTO this div. It starts empty so nothing flashes. -->
+    <div id="app"></div>
+
+    <!-- PREMIUM LOADER — sits OUTSIDE #app as its own fixed overlay,
+         so Blazor replacing #app's content never touches it. -->
+    <div class="portfolio-loader" id="portfolioLoader">
+
+        <div class="loader-glow"></div>
+
+        <div class="magic-orb">
+
+            <div class="orb-ring ring-one"></div>
+
+            <div class="orb-ring ring-two"></div>
+
+            <div class="orb-ring ring-three"></div>
+
+            <div class="orb-core">
+                <span>SA</span>
+            </div>
+
+        </div>
+
+
+        <div class="loader-brand">
+            SAJID <span>ABBAS</span>
+        </div>
+
+
+        <div class="loader-role">
+            FULL STACK .NET DEVELOPER
+        </div>
+
+
+        <div class="loader-progress">
+
+            <div class="loader-progress-bar"></div>
+
+        </div>
+
+
+        <div class="loader-status">
+
+            Initializing portfolio
+
+            <span class="loading-dots">
+                <i></i>
+                <i></i>
+                <i></i>
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div id="blazor-error-ui">
+
+        An unhandled error has occurred.
+
+        <a href="" class="reload">
+            Reload
+        </a>
+
+        <a class="dismiss">
+            ✕
+        </a>
+
+    </div>
+
+
+    <!-- autostart="false" — we start it manually in site.js so we can
+         control exactly when the loader disappears. -->
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <script src="js/site.js"></script>
+
+
+    <!-- EmailJS -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+
+    <script>
+
+        (function () {
+
+            emailjs.init({
+                publicKey: "xuAiDlvnWLkh7R4fK"
+            });
+
+        })();
+
+
+        window.sendContactEmail = function (
+            fromName,
+            fromEmail,
+            subject,
+            message
+        ) {
+
+            return emailjs.send(
+                "service_91egptd",
+                "template_49niij",
+                {
+                    title: subject,
+                    name: fromName,
+                    email: fromEmail,
+                    message: message,
+                    time: new Date().toLocaleString()
+                }
+            )
+                .then(function () {
+
+                    return true;
+
+                })
+                .catch(function (err) {
+
+                    console.error("EmailJS error:", err);
+
+                    return false;
+
+                });
+
+        };
+
+    </script>
+
+</body>
+
+</html>

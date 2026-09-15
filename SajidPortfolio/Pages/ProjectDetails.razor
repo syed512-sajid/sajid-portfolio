@@ -1,0 +1,349 @@
+﻿@page "/project/{Id:int}"
+@using SajidPortfolio.Models
+
+<PageTitle>@(_project?.Name ?? "Project not found") — Sajid Abbas</PageTitle>
+
+<div class="project-detail-page">
+    <div class="project-detail-container">
+
+        <a href="/#projects" class="back-link">
+            ← Back to projects
+        </a>
+
+        @if (_project is null)
+        {
+            <p class="body-text">This project could not be found.</p>
+        }
+        else
+        {
+            <p class="modal-eyebrow">@_project.Category</p>
+            <h1 class="detail-title">@_project.Name</h1>
+
+            <!-- GALLERY -->
+            <div class="gallery-wrap">
+                <div class="gallery-main project-image-wrap" style="position:relative; overflow:hidden;">
+                    <img src="images/projects/@_project.ImageFiles[_activeImage]"
+                         alt="@_project.Name screenshot @(_activeImage + 1)"
+                         style="transform:translate(@($"{_mainX}px"),@($"{_mainY}px")) scale(@_mainZoom.ToString(System.Globalization.CultureInfo.InvariantCulture)); cursor:@(_mainZoom > MinZoom ? (_isDragging ? "grabbing" : "grab") : "default"); transition:@(_isDragging ? "none" : "transform .15s ease"); touch-action:none; user-select:none;"
+                         draggable="false"
+                         @onpointerdown="StartMainDrag"
+                         @onpointermove="MoveMainDrag"
+                         @onpointerup="EndDrag"
+                         @onpointerleave="EndDrag"
+                         onerror="this.onerror=null;this.src='images/projects/placeholder.png';" />
+
+                    @if (_project.ImageFiles.Count > 1)
+                    {
+                        <button class="gallery-nav gallery-prev" @onclick="PrevImage" aria-label="Previous image">‹</button>
+                        <button class="gallery-nav gallery-next" @onclick="NextImage" aria-label="Next image">›</button>
+                        <span class="gallery-counter">@(_activeImage + 1) / @_project.ImageFiles.Count</span>
+                    }
+
+                    <!-- --new: eye + zoom controls ek sath, image ke top-right corner pe. Zoom buttons isi div ke andar image ko zoom karte hain; eye lightbox kholta hai -->
+                    <div class="gallery-controls" style="position:absolute; top:10px; right:10px; display:flex; align-items:center; gap:6px; z-index:5;">
+                        <button type="button" title="Zoom out" @onclick="MainZoomOut"
+                                style="background:rgba(0,0,0,.65); color:#fff; border:none; border-radius:50%; width:30px; height:30px; font-size:18px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                            −
+                        </button>
+                        <button class="image-preview-btn" aria-label="View full image" type="button" @onclick="OpenLightbox"
+                                style="position:static; background:rgba(0,0,0,.65); color:#fff; border:none; border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center;">
+                            <span class="eye-icon">👁</span>
+                        </button>
+                        <button type="button" title="Zoom in" @onclick="MainZoomIn"
+                                style="background:rgba(0,0,0,.65); color:#fff; border:none; border-radius:50%; width:30px; height:30px; font-size:18px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                            +
+                        </button>
+                    </div>
+                </div>
+
+                @if (_project.ImageFiles.Count > 1)
+                {
+                    <div class="gallery-thumbs">
+                        @for (int i = 0; i < _project.ImageFiles.Count; i++)
+                        {
+                            var idx = i;
+                            <img class="gallery-thumb @(idx == _activeImage ? "active" : "")"
+                                 src="images/projects/@_project.ImageFiles[idx]"
+                                 alt="Thumbnail @(idx + 1)"
+                                 onerror="this.onerror=null;this.src='images/projects/placeholder.png';"
+                                 @onclick="() => SetImage(idx)" />
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- CONTENT -->
+            <div class="detail-grid">
+                <div class="detail-main">
+                    <section class="detail-section">
+                        <h3>Overview</h3>
+                        <p>@_project.Overview</p>
+                    </section>
+
+                    <section class="detail-section">
+                        <h3>My role</h3>
+                        <p>@_project.Role</p>
+                    </section>
+
+                    <section class="detail-section">
+                        <h3>Highlights</h3>
+                        <ul class="modal-points">
+                            @foreach (var point in _project.Highlights)
+                            {
+                                <li>@point</li>
+                            }
+                        </ul>
+                    </section>
+                </div>
+
+                <aside class="detail-side">
+                    <h4>Built with</h4>
+                    <div class="tags">
+                        @foreach (var tag in _project.Tags)
+                        {
+                            <span class="tag">@tag</span>
+                        }
+                    </div>
+                </aside>
+            </div>
+
+            <a href="/#projects" class="btn btn-ghost detail-back-btn">← Back to all projects</a>
+
+            <!-- --new: Blazor-native lightbox (JS interop dependency hata diya, reliability ke liye) -->
+            @if (_isLightboxOpen)
+            {
+                <div class="lightbox-overlay" tabindex="0" @onkeydown="HandleLightboxKeydown" @onclick="CloseLightbox">
+                    <button class="lightbox-close" aria-label="Close" @onclick="CloseLightbox" @onclick:stopPropagation="true">✕</button>
+
+                    @if (_project.ImageFiles.Count > 1)
+                    {
+                        <button class="lightbox-nav lightbox-prev" aria-label="Previous image" @onclick="PrevImage" @onclick:stopPropagation="true">‹</button>
+                    }
+
+                    <img class="lightbox-img @(_zoom > MinZoom ? "zoomed" : "")"
+                         style="transform:translate(@($"{_lightboxX}px"),@($"{_lightboxY}px")) scale(@_zoom.ToString(System.Globalization.CultureInfo.InvariantCulture)); cursor:@(_zoom > MinZoom ? (_isDragging ? "grabbing" : "grab") : "zoom-in"); touch-action:none; user-select:none; transition:@(_isDragging ? "none" : "transform .15s ease");"
+                         draggable="false"
+                         @onpointerdown="StartLightboxDrag"
+                         @onpointermove="MoveLightboxDrag"
+                         @onpointerup="EndDrag"
+                         @onpointerleave="EndDrag"
+                         src="images/projects/@_project.ImageFiles[_activeImage]"
+                         alt="@_project.Name screenshot @(_activeImage + 1)"
+                         onerror="this.onerror=null;this.src='images/projects/placeholder.png';"
+                         @onclick="ToggleZoomOnClick"
+                         @onclick:stopPropagation="true" />
+
+                    @if (_project.ImageFiles.Count > 1)
+                    {
+                        <button class="lightbox-nav lightbox-next" aria-label="Next image" @onclick="NextImage" @onclick:stopPropagation="true">›</button>
+                        <span class="gallery-counter lightbox-counter">@(_activeImage + 1) / @_project.ImageFiles.Count</span>
+                    }
+
+                    <div class="lightbox-zoom-controls" @onclick:stopPropagation="true">
+                        <button class="lightbox-zoom-btn" @onclick="ZoomOut" aria-label="Zoom out">−</button>
+                        <span class="lightbox-zoom-level">@((_zoom * 100).ToString("0"))%</span>
+                        <button class="lightbox-zoom-btn" @onclick="ZoomIn" aria-label="Zoom in">+</button>
+                    </div>
+
+                    <span class="lightbox-hint">Use +/- to zoom, or click image</span>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<a href="#" class="back-to-top-btn" title="Back to top"
+   onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 19V5" />
+        <path d="M5 12l7-7 7 7" />
+    </svg>
+</a>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private ProjectItem? _project;
+    private int _activeImage = 0;
+
+    private bool _isLightboxOpen = false;
+    private double _zoom = 1;
+    private double _mainZoom = 1;
+    private const double MinZoom = 1;
+    private const double MaxZoom = 3;
+    private const double ZoomStep = 0.05;
+    private double _mainX = 0;
+    private double _mainY = 0;
+
+    private double _lightboxX = 0;
+    private double _lightboxY = 0;
+
+    private bool _isDragging = false;
+    private double _dragStartX;
+    private double _dragStartY;
+    private double _startX;
+    private double _startY;
+
+    protected override void OnParametersSet()
+    {
+        _project = ProjectData.Projects.FirstOrDefault(p => p.Id == Id);
+        _activeImage = 0;
+        _isLightboxOpen = false;
+        _mainZoom = 1;
+    }
+
+    private void SetImage(int idx)
+    {
+        _activeImage = idx;
+
+        _mainZoom = 1;
+        _mainX = 0;
+        _mainY = 0;
+
+        _zoom = 1;
+        _lightboxX = 0;
+        _lightboxY = 0;
+    }
+    private void NextImage()
+    {
+        if (_project is null) return;
+
+        _activeImage =
+            (_activeImage + 1) % _project.ImageFiles.Count;
+        _mainZoom = 1;
+        _mainX = 0;
+        _mainY = 0;
+
+        _zoom = 1;
+        _lightboxX = 0;
+        _lightboxY = 0;
+    }
+
+    private void PrevImage()
+    {
+        if (_project is null) return;
+
+        _activeImage =
+            (_activeImage - 1 + _project.ImageFiles.Count)
+            % _project.ImageFiles.Count;
+        _mainZoom = 1;
+        _mainX = 0;
+        _mainY = 0;
+
+        _zoom = 1;
+        _lightboxX = 0;
+        _lightboxY = 0;
+    }
+
+    private void MainZoomIn()
+    {
+        _mainZoom = Math.Min(
+            MaxZoom,
+            Math.Round(_mainZoom + ZoomStep, 2)
+        );
+    }
+
+    private void MainZoomOut()
+    {
+        _mainZoom = Math.Max(
+            MinZoom,
+            Math.Round(_mainZoom - ZoomStep, 2)
+        );
+
+        if (_mainZoom == MinZoom)
+        {
+            _mainX = 0;
+            _mainY = 0;
+        }
+    }
+
+    private void OpenLightbox()
+    {
+        if (_project is null || _project.ImageFiles.Count == 0)
+            return;
+
+        _zoom = MinZoom;
+        _lightboxX = 0;
+        _lightboxY = 0;
+        _isLightboxOpen = true;
+    }
+    private void StartMainDrag(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
+    {
+        if (_mainZoom <= MinZoom) return;
+
+        _isDragging = true;
+        _dragStartX = e.ClientX;
+        _dragStartY = e.ClientY;
+        _startX = _mainX;
+        _startY = _mainY;
+    }
+
+    private void MoveMainDrag(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
+    {
+        if (!_isDragging) return;
+
+        _mainX = _startX + (e.ClientX - _dragStartX);
+        _mainY = _startY + (e.ClientY - _dragStartY);
+    }
+
+    private void EndDrag()
+    {
+        _isDragging = false;
+    }
+
+    private void StartLightboxDrag(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
+    {
+        if (_zoom <= MinZoom) return;
+
+        _isDragging = true;
+        _dragStartX = e.ClientX;
+        _dragStartY = e.ClientY;
+        _startX = _lightboxX;
+        _startY = _lightboxY;
+    }
+
+    private void MoveLightboxDrag(Microsoft.AspNetCore.Components.Web.PointerEventArgs e)
+    {
+        if (!_isDragging) return;
+
+        _lightboxX = _startX + (e.ClientX - _dragStartX);
+        _lightboxY = _startY + (e.ClientY - _dragStartY);
+    }
+    private void CloseLightbox() => _isLightboxOpen = false;
+
+    private void ZoomIn()
+    {
+        _zoom = Math.Min(
+            MaxZoom,
+            Math.Round(_zoom + ZoomStep, 2)
+        );
+    }
+
+    private void ZoomOut()
+    {
+        _zoom = Math.Max(
+            MinZoom,
+            Math.Round(_zoom - ZoomStep, 2)
+        );
+
+        if (_zoom == MinZoom)
+        {
+            _lightboxX = 0;
+            _lightboxY = 0;
+        }
+    }
+
+    private void ToggleZoomOnClick() => _zoom = _zoom > MinZoom ? MinZoom : 2;
+
+    private void HandleLightboxKeydown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "Escape": CloseLightbox(); break;
+            case "ArrowLeft": PrevImage(); break;
+            case "ArrowRight": NextImage(); break;
+            case "+": ZoomIn(); break;
+            case "-": ZoomOut(); break;
+        }
+    }
+}

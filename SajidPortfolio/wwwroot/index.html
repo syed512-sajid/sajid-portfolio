@@ -12,10 +12,46 @@
     <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
-    <div id="app">
-        <div class="loading-screen">
-            <span class="loading-text">sajid@dev:~$ starting_portfolio.exe</span>
+
+    <!-- Blazor renders INTO this div. It starts empty so nothing flashes. -->
+    <div id="app"></div>
+
+    <!-- PREMIUM LOADER — sits OUTSIDE #app as its own fixed overlay,
+         so Blazor replacing #app's content never touches it. -->
+    <div class="portfolio-loader" id="portfolioLoader">
+
+        <div class="loader-glow"></div>
+
+        <div class="magic-orb">
+            <div class="orb-ring ring-one"></div>
+            <div class="orb-ring ring-two"></div>
+            <div class="orb-ring ring-three"></div>
+            <div class="orb-core">
+                <span>SA</span>
+            </div>
         </div>
+
+        <div class="loader-brand">
+            SAJID <span>ABBAS</span>
+        </div>
+
+        <div class="loader-role">
+            FULL STACK .NET DEVELOPER
+        </div>
+
+        <div class="loader-progress">
+            <div class="loader-progress-bar"></div>
+        </div>
+
+        <div class="loader-status">
+            Initializing portfolio
+            <span class="loading-dots">
+                <i></i>
+                <i></i>
+                <i></i>
+            </span>
+        </div>
+
     </div>
 
     <div id="blazor-error-ui">
@@ -24,7 +60,35 @@
         <a class="dismiss">✕</a>
     </div>
 
-    <script src="_framework/blazor.webassembly.js"></script>
+    <!-- autostart="false" — we start it manually in site.js so we can
+         control exactly when the loader disappears. -->
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
     <script src="js/site.js"></script>
+
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function () {
+            emailjs.init({
+                publicKey: "xuAiDlvnWLkh7R4fK", // <-- Public Key yahan
+            });
+        })();
+
+        window.sendContactEmail = function (fromName, fromEmail, subject, message) {
+            return emailjs.send("service_91egptd", "template_49niij8", {
+                title: subject,
+                name: fromName,
+                email: fromEmail,
+                message: message,
+                time: new Date().toLocaleString()
+            }).then(function () {
+                return true;
+            }).catch(function (err) {
+                console.error("EmailJS error:", err);
+                return false;
+            });
+        };
+    </script>
+
 </body>
 </html>
